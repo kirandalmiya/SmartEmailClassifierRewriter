@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Email Classifier & Rewriter</title>
+  <style>
+    body { font-family: Arial; padding: 20px; max-width: 700px; margin: auto; }
+    textarea, input, select { width: 100%; margin-top: 10px; padding: 10px; font-size: 16px; }
+    button { padding: 10px 20px; margin-top: 15px; font-size: 16px; cursor: pointer; }
+    .response { margin-top: 20px; padding: 10px; background-color: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <h2>Smart Email Classifier & Rewriter</h2>
+
+  <label for="email">Enter Email Content:</label>
+  <textarea id="email" rows="5"></textarea>
+
+  <label for="operation">Choose Operation:</label>
+  <select id="operation" onchange="toggleToneInput()">
+    <option value="classify">Classify Email</option>
+    <option value="rewrite">Rewrite Email</option>
+  </select>
+
+  <div id="toneSection" style="display: none; margin-top: 15px;">
+
+    <label for="tone">Enter Desired Tone (e.g., professional, friendly, asserative):</label>
+    <input type="text" id="tone" placeholder="Enter tone here">
+  </div>
+
+  <button onclick="submit()">Submit</button>
+  <button onclick="resetForm()" style="margin-left: 10px;">Reset</button>
+  
+
+
+  <div class="response" id="result"></div>
+
+  <script>
+    function toggleToneInput() {
+      const op = document.getElementById("operation").value;
+      document.getElementById("toneSection").style.display = (op === "rewrite") ? "block" : "none";
+    }
+
+    async function submit() {
+      const email = document.getElementById("email").value;
+      const operation = document.getElementById("operation").value;
+      const tone = document.getElementById("tone").value;
+      let response;
+
+      if (operation === "classify") {
+        response = await fetch("/classify_email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+      } else {
+        response = await fetch("/rewrite_email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, tone })
+        });
+      }
+
+      const data = await response.json();
+      document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+    }
+    function resetForm() {
+    document.getElementById("email").value = "";
+    document.getElementById("operation").value = "classify";
+    document.getElementById("tone").selectedIndex = 0;
+    document.getElementById("toneSection").style.display = "none";
+    document.getElementById("result").innerText = "";
+  }
+  </script>
+</body>
+</html>
